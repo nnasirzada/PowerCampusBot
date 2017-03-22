@@ -13,6 +13,8 @@ import main.Constants;
 import main.CustomConnection;
 
 public class CGPA {
+	/* Input: Cumulative GPA: 2.45 Cumulative GPA: 3.01
+	 * Find only numbers and return as formatted string */
 	private static String extractCGPA(String input) {
 		StringBuilder sb = new StringBuilder();
 		Pattern pattern = Pattern.compile(Constants.Selector.CGPA_REGEX);
@@ -31,20 +33,22 @@ public class CGPA {
 		}
 
 		if (matched == 0) {
-			sb.append("I found nothing." + Constants.Replies.CHECK_ACCOUNT);
+			sb.append("I found nothing. " + Constants.Replies.CHECK_ACCOUNT);
 		}
 
 		return sb.toString();
 	}
 
-	public static SendMessage onCGPACommand(Message message) throws IOException {
+	public static SendMessage execute(Message message) throws IOException {
 		DatabaseManager databaseManager = DatabaseManager.getInstance();
 		String CGPA = null;
-
+		
+		//Get username and password from database and try to login
 		Connection.Response auth_response = CustomConnection.connect(
 				databaseManager.getUsername(message.getFrom().getId()),
 				databaseManager.getPassword(message.getFrom().getId()));
 
+		//If login is successful find GPA and format it.
 		if (CustomConnection.isLoggedIn(auth_response, databaseManager.getUsername(message.getFrom().getId()))) {
 			Map<String, String> loginCookies = CustomConnection.getCookies(auth_response);
 
