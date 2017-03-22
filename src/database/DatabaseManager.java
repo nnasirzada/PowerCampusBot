@@ -47,6 +47,7 @@ public class DatabaseManager {
     
     private int createNewTables() throws SQLException {
         connection.executeQuery(Constants.DB.createUserTable);
+        connection.executeQuery(Constants.DB.createScheduleStateTable);
         return Constants.DB.version;
     }
     
@@ -176,5 +177,43 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return messageId;
+    }
+    
+    public boolean addUserForSchedule(Integer userId) {
+    	int updatedRows = 0;
+    	try {
+	    	final PreparedStatement preparedStatement = connection.getPreparedStatement("REPLACE INTO ScheduleState (userId) VALUES (?)");
+	        preparedStatement.setInt(1, userId);
+	        updatedRows = preparedStatement.executeUpdate();
+    	} catch (SQLException e) {
+    		e.printStackTrace();
+    	}
+        return updatedRows > 0;
+    }
+    
+    public boolean getUserForSchedule(Integer userId) {
+    	try {
+	    	final PreparedStatement preparedStatement = connection.getPreparedStatement("SELECT COUNT(*) as C FROM ScheduleState WHERE userId = ?");
+	        preparedStatement.setInt(1, userId);
+	        final ResultSet result = preparedStatement.executeQuery();
+	        if(result.next()) {
+	        	return true;
+	        }
+    	} catch (SQLException e) {
+    		e.printStackTrace();
+    	}
+        return false;
+    }
+    
+    public boolean deleteUserForSchedule(Integer userId) {
+    	int updatedRows = 0;
+    	try {
+	    	final PreparedStatement preparedStatement = connection.getPreparedStatement("DELETE FROM ScheduleState WHERE userId = ?");
+	        preparedStatement.setInt(1, userId);
+	        updatedRows = preparedStatement.executeUpdate();
+    	} catch (SQLException e) {
+    		e.printStackTrace();
+    	}
+        return updatedRows > 0;
     }
 }

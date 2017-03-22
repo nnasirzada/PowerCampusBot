@@ -40,13 +40,17 @@ public class Schedule {
 
 		if (count == 0)
 			sb.append("You don't have class on <b>" + dayOfWeek + "</b>.");
-		else
-			sb.insert(0, String.format("You have <b>%d</b> %s:\n\n", count, (count == 1) ? "class" : "classes"));
+		else {
+			if(!dayOfWeek.equals("General"))
+				sb.insert(0, String.format("You have <b>%d</b> %s on <b>%s</b>:\n\n", count, (count == 1) ? "class" : "classes", dayOfWeek));
+			else 
+				sb.insert(0, String.format("You have <b>%d</b> %s:\n\n", count, (count == 1) ? "class" : "classes"));
+		}
 
 		return sb.toString();
 	}
 
-	private static ReplyKeyboardMarkup getScheduleKeyboard() {
+	public static ReplyKeyboardMarkup getScheduleKeyboard() {
 		ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 		replyKeyboardMarkup.setSelective(true);
 		replyKeyboardMarkup.setResizeKeyboard(true);
@@ -78,6 +82,7 @@ public class Schedule {
 	public static SendMessage selectDay(Message message) {
 		SendMessage sendMessageRequest = new SendMessage();
 		sendMessageRequest.setChatId(message.getChatId());
+		sendMessageRequest.setReplyToMessageId(message.getMessageId());
 		sendMessageRequest.setReplyMarkup(getScheduleKeyboard());
 		sendMessageRequest.enableHtml(true);
 		sendMessageRequest.setText(Constants.Replies.SELECT_DAY);

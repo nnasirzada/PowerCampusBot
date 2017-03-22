@@ -64,6 +64,7 @@ public class CGPA {
 
 		SendMessage sendMessageRequest = new SendMessage();
 		sendMessageRequest.setChatId(message.getChatId());
+		sendMessageRequest.setReplyToMessageId(message.getMessageId());
 		sendMessageRequest.setText(CGPA);
 		return sendMessageRequest;
 	}

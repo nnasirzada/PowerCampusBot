@@ -1,4 +1,5 @@
 package main;
+import services.Emoji;
 
 public class Constants {
 	public static final String USER_AGENT_FIREFOX = "Firefox";
@@ -17,19 +18,24 @@ public class Constants {
 		public static final String SETUP_PASSWORD = "Last step, please reply to this message with your PowerCampus password.";
 		public static final String ACCOUNT_INFORMATION = "Your username: %s\nYour password: %s";
 		public static final String SETUP_COMPLETE = "Setup is complete.\n\n" + ACCOUNT_INFORMATION;
-		public static final String CHECK_ACCOUNT = "Check " + Constants.Commands.accountCommand + " whether your username and password is correct";
+		public static final String CHECK_ACCOUNT = "Check " + Commands.accountCommand + " whether your username and password is correct";
+		public static final String SELECT_DAY = "Please select day of week";
 	}
 	
-	public class Commands {
+	public static class Commands {
 		public static final String commandInitChar = "/";
 		public static final String startCommand = commandInitChar + "start";
 		public static final String setupCommand = commandInitChar + "setup";
 		public static final String accountCommand = commandInitChar + "account";
 		public static final String cgpaCommand = commandInitChar + "cgpa";
+		public static final String scheduleCommand = commandInitChar + "schedule";
+		public static final String helpCommand = commandInitChar + "help";
 		
-		private static final String commandList = "setup - set your PowerCampus username and password"
-				+ "account - information about your username and password"
-				+ "cgpa - your cumulative grade point average";
+		public static final String commandList = Emoji.GEAR + setupCommand + " - set your PowerCampus username and password"
+				+ Emoji.INFORMATION_SOURCE + accountCommand + " - information about your username and password"
+				+ Emoji.GRADUATION_CUP + cgpaCommand + " - your cumulative grade point average"
+				+ Emoji.TEAR_OFF_CALENDAR + scheduleCommand + " - information about your class schedule\n"
+				+ Emoji.SQUARED_SOS + helpCommand + " - information about all commands";
 	}
 	
 	public class Url {
@@ -43,6 +49,7 @@ public class Constants {
 		public static final String CGPA_REGEX = "(?:\\d*\\.)?\\d+";
 	    public static final String CLASS_NAMES = "a[title]:contains(-)";
 	    public static final String CLASS_TIME = "tr[valign]>td[align='left'] + td";
+		public static final String FORMAT_SCHEDULE = "<b>Class:</b> %s\n<b>Time & Room:</b> %s\n\n";
 	}
 	
 	public class Status {
@@ -70,5 +77,6 @@ public class Constants {
 	   public static final String addUserSQL = "INSERT INTO users (userId, status, messageId, telegramName, username, password) "
 													+ "VALUES(?, ?, ?, ?, ?, ?) "
 													+ "ON DUPLICATE KEY UPDATE status = ?, messageId = ?";
+	   public static final String createScheduleStateTable = "CREATE TABLE IF NOT EXISTS ScheduleState (userId INTEGER PRIMARY KEY);";
 	}
 }
