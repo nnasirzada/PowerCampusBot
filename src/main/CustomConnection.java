@@ -20,8 +20,8 @@ public class CustomConnection {
 	                .method(Connection.Method.POST).execute();
 	    }
 
-	    public static boolean isLoggedIn(Connection.Response auth, String pc_username)throws IOException {
-	        return auth.parse().toString().contains(pc_username);
+	    public static boolean isLoggedIn(Connection.Response auth)throws IOException {
+	        return auth.parse().toString().contains("Welcome");
 	    }
 
 	    public static Map<String, String> getCookies(Connection.Response auth){

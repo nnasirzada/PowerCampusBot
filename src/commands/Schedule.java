@@ -18,6 +18,66 @@ import main.Constants;
 import main.CustomConnection;
 
 public class Schedule {
+
+	public static SendMessage selectDay(Message message) throws IOException {
+		SendMessage sendMessageRequest = new SendMessage();
+		sendMessageRequest.setChatId(message.getChatId());
+		sendMessageRequest.setReplyToMessageId(message.getMessageId());
+		sendMessageRequest.enableHtml(true);
+		
+		Connection.Response auth_response = CustomConnection.connect(
+				DatabaseManager.getInstance().getUsername(message.getFrom().getId()),
+				DatabaseManager.getInstance().getPassword(message.getFrom().getId()));
+
+		//Check if logged in
+		if (CustomConnection.isLoggedIn(auth_response)) {
+			sendMessageRequest.setText(Constants.Replies.SELECT_DAY);
+			sendMessageRequest.setReplyMarkup(getScheduleKeyboard());
+			DatabaseManager.getInstance().addUserState(message.getFrom().getId(), Constants.State.WAITING_SCHEDULE);
+		} else {
+			sendMessageRequest.setText(Constants.Replies.CHECK_ACCOUNT);
+		}
+
+		return sendMessageRequest;
+	}
+
+	public static SendMessage execute(Message message) throws IOException {
+		String response = null;
+		DatabaseManager databaseManager = DatabaseManager.getInstance();
+
+		//Get username and password from database and try to login
+		Connection.Response auth_response = CustomConnection.connect(
+				databaseManager.getUsername(message.getFrom().getId()),
+				databaseManager.getPassword(message.getFrom().getId()));
+
+		//If login is successful find class names & times.
+		if (CustomConnection.isLoggedIn(auth_response)) {
+			Map<String, String> loginCookies = CustomConnection.getCookies(auth_response);
+
+			// Create connection with class schedule web page and get its content
+			Connection.Response schedule = Jsoup.connect(Constants.Url.PC_CLASS_SCHEDULE).method(Connection.Method.GET)
+					.cookies(loginCookies).execute();
+
+			Elements classNames = schedule.parse().select(Constants.Selector.CLASS_NAMES);
+			Elements classTimes = schedule.parse().select(Constants.Selector.CLASS_TIME);
+
+			response = formatResponse(classNames, classTimes, message.getText());
+		} else {
+			response = Constants.Replies.CHECK_ACCOUNT;
+		}
+		
+		DatabaseManager.getInstance().addUserState(message.getFrom().getId(), Constants.State.DEFAULT);
+
+		SendMessage sendMessageRequest = new SendMessage();
+		sendMessageRequest.setChatId(message.getChat().getId());
+		ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
+		replyKeyboardRemove.setSelective(true);
+		sendMessageRequest.setReplyMarkup(replyKeyboardRemove);
+		sendMessageRequest.enableHtml(true);
+		sendMessageRequest.setText(response);
+		return sendMessageRequest;
+	}
+	
 	private static String formatResponse(Elements classNames, Elements classTimes, String dayOfWeek) {
 		StringBuilder sb = new StringBuilder();
 		int count = 0;
@@ -77,51 +137,5 @@ public class Schedule {
 
 		replyKeyboardMarkup.setKeyboard(keyboard);
 		return replyKeyboardMarkup;
-	}
-
-	public static SendMessage selectDay(Message message) {
-		SendMessage sendMessageRequest = new SendMessage();
-		sendMessageRequest.setChatId(message.getChatId());
-		sendMessageRequest.setReplyToMessageId(message.getMessageId());
-		sendMessageRequest.setReplyMarkup(getScheduleKeyboard());
-		sendMessageRequest.enableHtml(true);
-		sendMessageRequest.setText(Constants.Replies.SELECT_DAY);
-
-		return sendMessageRequest;
-	}
-
-	public static SendMessage execute(Message message) throws IOException {
-		String response = null;
-		DatabaseManager databaseManager = DatabaseManager.getInstance();
-
-		//Get username and password from database and try to login
-		Connection.Response auth_response = CustomConnection.connect(
-				databaseManager.getUsername(message.getFrom().getId()),
-				databaseManager.getPassword(message.getFrom().getId()));
-
-		//If login is successful find class names & times.
-		if (CustomConnection.isLoggedIn(auth_response, databaseManager.getUsername(message.getFrom().getId()))) {
-			Map<String, String> loginCookies = CustomConnection.getCookies(auth_response);
-
-			// Create connection with class schedule web page and get its content
-			Connection.Response schedule = Jsoup.connect(Constants.Url.PC_CLASS_SCHEDULE).method(Connection.Method.GET)
-					.cookies(loginCookies).execute();
-
-			Elements classNames = schedule.parse().select(Constants.Selector.CLASS_NAMES);
-			Elements classTimes = schedule.parse().select(Constants.Selector.CLASS_TIME);
-
-			response = formatResponse(classNames, classTimes, message.getText());
-		} else {
-			response = Constants.Replies.CHECK_ACCOUNT;
-		}
-
-		SendMessage sendMessageRequest = new SendMessage();
-		sendMessageRequest.setChatId(message.getChat().getId());
-		ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
-		replyKeyboardRemove.setSelective(true);
-		sendMessageRequest.setReplyMarkup(replyKeyboardRemove);
-		sendMessageRequest.enableHtml(true);
-		sendMessageRequest.setText(response);
-		return sendMessageRequest;
 	}
 }

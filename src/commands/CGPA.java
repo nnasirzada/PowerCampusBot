@@ -49,7 +49,7 @@ public class CGPA {
 				databaseManager.getPassword(message.getFrom().getId()));
 
 		//If login is successful find GPA and format it.
-		if (CustomConnection.isLoggedIn(auth_response, databaseManager.getUsername(message.getFrom().getId()))) {
+		if (CustomConnection.isLoggedIn(auth_response)) {
 			Map<String, String> loginCookies = CustomConnection.getCookies(auth_response);
 
 			// Create connection with transcript web page and get its content
@@ -61,7 +61,8 @@ public class CGPA {
 		} else {
 			CGPA = Constants.Replies.CHECK_ACCOUNT;
 		}
-
+		DatabaseManager.getInstance().addUserState(message.getFrom().getId(), Constants.State.DEFAULT);
+		
 		SendMessage sendMessageRequest = new SendMessage();
 		sendMessageRequest.setChatId(message.getChatId());
 		sendMessageRequest.setReplyToMessageId(message.getMessageId());

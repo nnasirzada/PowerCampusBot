@@ -12,6 +12,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 import org.telegram.telegrambots.updateshandlers.SentCallback;
 import database.DatabaseManager;
 import commands.CGPA;
+import commands.Grades;
 import commands.Schedule;
 
 public class PowerCampusHandler extends TelegramLongPollingBot {
@@ -54,6 +55,10 @@ public class PowerCampusHandler extends TelegramLongPollingBot {
 					onScheduleCommand(message);
 				} else if (messageText.startsWith(Constants.Commands.helpCommand)) {
 					onHelpCommand(message);
+				} else if (messageText.startsWith(Constants.Commands.gradesCommand)) {
+					onGradesCommand(message);
+				} else {
+					onInvalidCommand(message);
 				}
 			}
 			// If message is not command...
@@ -78,25 +83,23 @@ public class PowerCampusHandler extends TelegramLongPollingBot {
 				//If messsage is not reply then ...
 				else {
 					//If user sent day of week then reply with schedule
-					if(DatabaseManager.getInstance().getUserForSchedule(message.getFrom().getId())) {
-						sendMessageAsync(Schedule.execute(message), new SentCallback<Message>() {
-							@Override
-							public void onResult(BotApiMethod<Message> arg0, Message arg1) {
-								DatabaseManager.getInstance().deleteUserForSchedule(message.getFrom().getId());
-							}
-							
-							@Override
-							public void onException(BotApiMethod<Message> arg0, Exception arg1) {
-							}
-							
-							@Override
-							public void onError(BotApiMethod<Message> arg0, TelegramApiRequestException arg1) {
-							}
-						});
+					if(DatabaseManager.getInstance().getUserState(message.getFrom().getId()) == Constants.State.WAITING_SCHEDULE) {
+						sendMessage(Schedule.execute(message));
+					}
+					//If user sent course name then reply with activities and points
+					else if (DatabaseManager.getInstance().getUserState(message.getFrom().getId()) == Constants.State.WAITING_CLASS_NAME){
+						sendMessage(Grades.execute(message));
 					}
 				}
 			}
 		}
+	}
+
+	private void onInvalidCommand(Message message) throws TelegramApiException {
+		SendMessage sendMessageRequest = new SendMessage();
+		sendMessageRequest.setChatId(message.getChatId());
+		sendMessageRequest.setText("Command " + message.getText() + " not found. " + Constants.Replies.HELP_COMMAND);
+		sendMessage(sendMessageRequest);
 	}
 
 	public void onStartCommand(Message message) throws TelegramApiException {
@@ -104,7 +107,6 @@ public class PowerCampusHandler extends TelegramLongPollingBot {
 		sendMessageRequest.setChatId(message.getChatId());
 		sendMessageRequest.setText(String.format(Constants.Replies.START_COMMAND, message.getChat().getFirstName(),
 				Constants.Commands.setupCommand));
-
 		sendMessage(sendMessageRequest);
 	}
 
@@ -145,7 +147,6 @@ public class PowerCampusHandler extends TelegramLongPollingBot {
 		SendMessage sendMessageRequest = new SendMessage();
 		sendMessageRequest.setChatId(message.getChatId());
 		sendMessageRequest.setText(String.format(Constants.Replies.ACCOUNT_INFORMATION, username, password));
-
 		sendMessage(sendMessageRequest);
 	}
 
@@ -208,25 +209,15 @@ public class PowerCampusHandler extends TelegramLongPollingBot {
 		SendMessage sendMessageRequest = new SendMessage();
 		sendMessageRequest.setChatId(message.getChatId());
 		sendMessageRequest.setReplyToMessageId(message.getMessageId());
-		sendMessageRequest.setText("These are the possible commands:\n\n" + Constants.Commands.commandList);
-		
+		sendMessageRequest.setText(Constants.Replies.HELP_COMMAND);
 		sendMessage(sendMessageRequest);
 	}
 
-	public void onScheduleCommand(Message message) throws TelegramApiException {
-		sendMessageAsync(Schedule.selectDay(message), new SentCallback<Message>() {
-			@Override
-			public void onResult(BotApiMethod<Message> arg0, Message arg1) {
-				DatabaseManager.getInstance().addUserForSchedule(message.getFrom().getId());
-			}
-			
-			@Override
-			public void onException(BotApiMethod<Message> arg0, Exception arg1) {
-			}
-			
-			@Override
-			public void onError(BotApiMethod<Message> arg0, TelegramApiRequestException arg1) {	
-			}
-		});
+	public void onScheduleCommand(Message message) throws TelegramApiException, IOException {
+		sendMessage(Schedule.selectDay(message));
+	}
+	
+	public void onGradesCommand(Message message) throws TelegramApiException, IOException {
+		sendMessage(Grades.getClasses(message));
 	}
 }
