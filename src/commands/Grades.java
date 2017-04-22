@@ -40,7 +40,6 @@ public class Grades {
 	}
 	
 	public static SendMessage getClasses(Message message) throws IOException {
-		DatabaseManager databaseManager = DatabaseManager.getInstance();
 		String coursesLink = null;
 		
 		SendMessage sendMessageRequest = new SendMessage();
@@ -50,13 +49,14 @@ public class Grades {
 		
 		//Get username and password from database and try to login
 		Connection.Response auth_response = CustomConnection.connect(
-				databaseManager.getUsername(message.getFrom().getId()),
-				databaseManager.getPassword(message.getFrom().getId()));
+				DatabaseManager.getInstance().getUsername(message.getFrom().getId()),
+				DatabaseManager.getInstance().getPassword(message.getFrom().getId()));
 
 		//If login is successful find GPA and format it.
 		if (CustomConnection.isLoggedIn(auth_response)) {
+			StringBuilder responseText = new StringBuilder(Constants.Replies.SELECT_COURSE + "\n\n(Course Name - Projected Grade)\n\n");
 			Map<String, String> loginCookies = CustomConnection.getCookies(auth_response);
-
+			
 			// Create connection with grade report
 			Connection.Response gradeReport = Jsoup.connect(Constants.Url.PC_GRADE_REPORT).method(Connection.Method.GET)
 					.cookies(loginCookies).execute();
@@ -67,17 +67,21 @@ public class Grades {
 					.cookies(loginCookies).execute();
 			Elements links = grades.parse().select(Constants.Selector.CLASS_LINKS);
 			Elements courseNames = grades.parse().select(Constants.Selector.CLASS_NAMES_GRADE_REPORT);
+			Elements projectedGrades = grades.parse().select(Constants.Selector.PROJECTED_GRADE);
 			JSONObject jsonObject = new JSONObject();
 			for(int i = 0; i < links.size(); i++) {
 				jsonObject.put(courseNames.get(i).text(), Constants.Url.PREFIX_COURSE_LINK + links.get(i).attr("href"));
+				responseText.append(courseNames.get(i).text() + " - <b>" 
+						+ ((projectedGrades.get(i).text().length() == 0) ? "NA" : projectedGrades.get(i).text())
+						+ "</b>\n");
 			}
 			String result = jsonObject.toString();
 			//change user status
-			databaseManager.addUserState(message.getFrom().getId(), Constants.State.WAITING_CLASS_NAME, result);
-			sendMessageRequest.setText(Constants.Replies.SELECT_COURSE);
+			DatabaseManager.getInstance().addUserState(message.getFrom().getId(), Constants.State.WAITING_CLASS_NAME, result);
+			sendMessageRequest.setText(responseText.toString());
 			sendMessageRequest.setReplyMarkup(getGradesKeyboard(courseNames));
 		} else {
-			databaseManager.addUserState(message.getFrom().getId(), Constants.State.DEFAULT);
+			DatabaseManager.getInstance().addUserState(message.getFrom().getId(), Constants.State.DEFAULT);
 			sendMessageRequest.setText(Constants.Replies.CHECK_ACCOUNT);
 		}
 		

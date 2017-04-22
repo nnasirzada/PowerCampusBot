@@ -1,6 +1,8 @@
 package main;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import org.telegram.telegrambots.api.methods.BotApiMethod;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
@@ -38,6 +40,10 @@ public class PowerCampusHandler extends TelegramLongPollingBot {
 
 	public void handleCommands(Update update) throws TelegramApiException, IOException {
 		Message message = update.getMessage();
+		
+		System.out.format("--> Date: %s || From: %s || Message: %s\n", new SimpleDateFormat("HH:mm:ss, dd/MM/yyyy").format(Calendar.getInstance().getTime()), 
+				message.getFrom().getFirstName(), 
+				message.getText());
 
 		if (message != null && message.hasText()) {
 			String messageText = message.getText();
@@ -57,6 +63,9 @@ public class PowerCampusHandler extends TelegramLongPollingBot {
 					onHelpCommand(message);
 				} else if (messageText.startsWith(Constants.Commands.gradesCommand)) {
 					onGradesCommand(message);
+				} else if (messageText.startsWith("/restart") && message.getFrom().getId() == Constants.BotConfig.ID_NAZAR){
+					Runtime.getRuntime().exec("cmd /c start C:\\Users\\Administrator\\Desktop\\start.bat");
+					System.exit(1);
 				} else {
 					onInvalidCommand(message);
 				}

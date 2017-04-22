@@ -54,8 +54,7 @@ public class DatabaseManager {
 	public boolean addUser(Integer userId, int status, int messageId, String telegramName) {
 		int updatedRows = 0;
 		try {
-			// connection.initTransaction();
-
+			connection.initTransaction();
 			final PreparedStatement preparedStatement = connection.getPreparedStatement(Constants.DB.addUserSQL);
 			preparedStatement.setInt(1, userId);
 			preparedStatement.setInt(2, status);
@@ -70,7 +69,7 @@ public class DatabaseManager {
 			preparedStatement.setInt(7, Constants.Status.WAITING_USERNAME);
 			preparedStatement.setInt(8, messageId);
 			updatedRows = preparedStatement.executeUpdate();
-			// connection.commitTransaction();
+			connection.commitTransaction();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -80,7 +79,7 @@ public class DatabaseManager {
 	public boolean setUsername(Integer userId, int status, int messageId, String username) {
 		int updatedRows = 0;
 		try {
-			// connection.initTransaction();
+			connection.initTransaction();
 			final PreparedStatement preparedStatement = connection
 					.getPreparedStatement("UPDATE Users SET status = ?, messageId = ?, username = ? WHERE userId = ?");
 			preparedStatement.setInt(1, status);
@@ -92,7 +91,7 @@ public class DatabaseManager {
 			}
 			preparedStatement.setInt(4, userId);
 			updatedRows = preparedStatement.executeUpdate();
-			// connection.commitTransaction();
+			connection.commitTransaction();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

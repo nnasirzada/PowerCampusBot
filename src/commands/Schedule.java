@@ -43,12 +43,10 @@ public class Schedule {
 
 	public static SendMessage execute(Message message) throws IOException {
 		String response = null;
-		DatabaseManager databaseManager = DatabaseManager.getInstance();
-
 		//Get username and password from database and try to login
 		Connection.Response auth_response = CustomConnection.connect(
-				databaseManager.getUsername(message.getFrom().getId()),
-				databaseManager.getPassword(message.getFrom().getId()));
+				DatabaseManager.getInstance().getUsername(message.getFrom().getId()),
+				DatabaseManager.getInstance().getPassword(message.getFrom().getId()));
 
 		//If login is successful find class names & times.
 		if (CustomConnection.isLoggedIn(auth_response)) {

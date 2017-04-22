@@ -40,13 +40,12 @@ public class CGPA {
 	}
 
 	public static SendMessage execute(Message message) throws IOException {
-		DatabaseManager databaseManager = DatabaseManager.getInstance();
 		String CGPA = null;
 		
 		//Get username and password from database and try to login
 		Connection.Response auth_response = CustomConnection.connect(
-				databaseManager.getUsername(message.getFrom().getId()),
-				databaseManager.getPassword(message.getFrom().getId()));
+				DatabaseManager.getInstance().getUsername(message.getFrom().getId()),
+				DatabaseManager.getInstance().getPassword(message.getFrom().getId()));
 
 		//If login is successful find GPA and format it.
 		if (CustomConnection.isLoggedIn(auth_response)) {

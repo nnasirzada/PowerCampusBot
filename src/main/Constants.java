@@ -4,7 +4,7 @@ import services.Emoji;
 public class Constants {
 	public static final String USER_AGENT_FIREFOX = "Firefox";
 	
-	class BotConfig {
+	public static class BotConfig {
 		public static final String POWERCAMPUS_TOKEN = "<bot-token>";
 		public static final String POWERCAMPUS_USER = "PowerCampusBot";
 		public static final long ID_NAZAR = 177192578L;
@@ -60,6 +60,7 @@ public class Constants {
 		public static final String FORMAT_SCHEDULE = "<b>Class:</b> %s\n<b>Time & Room:</b> %s\n\n";
 		public static final String CLASS_LINKS = "#content>div:last-child>div[class='defaultTable']>div>ul>li>a";
 		public static final String CLASS_NAMES_GRADE_REPORT = "#content>div:last-child>table[width='100%']>tbody>tr[id]>td:nth-child(3)>a";
+		public static final String PROJECTED_GRADE = "#content>div:last-child>table[width='100%']>tbody>tr[id]>td:nth-child(7)";
 		public static final String CURRENT_TERM = "#content>table>tbody>tr:nth-child(2)>td>a";
 		public static final String CUMULATIVE_GRADE = ".total-credits>span>b";
 		public static final String ACTIVITIES = "#narrowResultsFinal>div>div[id]>table>tbody>tr:not(tr[class='trTableHeader'])";
@@ -80,10 +81,10 @@ public class Constants {
 	public class DB {
 		public static final int version = 0;
 		public static final String DB_NAME = "powercampusbot";
-		public static final String linkDB = "jdbc:mysql://localhost:3306/" + DB_NAME + "?useUnicode=true&characterEncoding=UTF-8";
+		public static final String linkDB = "jdbc:mysql://localhost:3306/" + DB_NAME + "?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true";
 	    public static final String controllerDB = "com.mysql.jdbc.Driver";
 	    public static final String userDB = "root";
-	    public static final String password = "";
+	    public static final String password = "<database-password>";
 		public static final String createUserTable = "CREATE TABLE IF NOT EXISTS Users "
 													+ "("
 													+ "userId INTEGER PRIMARY KEY, " 
